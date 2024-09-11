@@ -11,12 +11,11 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
-# Load environment variables
+
 load_dotenv()
 os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# Function to scrape website content from URL
 def scrape_website_content(url):
     try:
         response = requests.get(url)
@@ -28,19 +27,16 @@ def scrape_website_content(url):
         st.error(f"Failed to scrape {url}: {e}")
         return ""
 
-# Function to split text into chunks for embedding
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=500)
     chunks = text_splitter.split_text(text)
     return chunks
 
-# Function to generate vector store from text chunks
 def get_vector_store(text_chunks):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
 
-# Conversational chain with Google Generative AI
 def get_conversational_chain():
     prompt_template = """
     You are an intelligent assistant designed to analyze and provide precise information derived from website data. Your goal is to respond clearly, concisely, and accurately, based solely on the information scraped from the provided URLs.
@@ -79,13 +75,13 @@ def user_input(user_question):
         .replace(" ", " ")
     )
 
-    # Store question and answer in session state for chat history
+    
     st.session_state.chat_history.insert(0, (user_question, formatted_response))  # Insert at the beginning for upward scrolling
 
 def main():
     st.set_page_config(page_title="Website Assistant Chatbot", page_icon="🌐", layout="wide")
 
-    # Custom CSS for color theme and chat layout
+    
     st.markdown("""
         <style>
         .stApp::before {
@@ -144,37 +140,37 @@ def main():
         
         """, unsafe_allow_html=True)
 
-    # Initialize chat history in session state
+    
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # Initialize session state for URL boxes
+    
     if "url_boxes" not in st.session_state:
         st.session_state.url_boxes = 1
 
-    # Layout: Split between URL input and chat
+    
     left_col, right_col = st.columns([1, 3])
 
-    # URL Input Area (Left)
+    
     with left_col:
         st.markdown("<h3 style='color: #00B4D8;'>Enter The URL</h3>", unsafe_allow_html=True)
         
-        # URL container with a border
+        
         st.markdown("<div class='url-container'>", unsafe_allow_html=True)
         
-        # Display URL input boxes
+        
         urls = []
         for i in range(st.session_state.url_boxes):
             url = st.text_input(f"URL {i + 1}", key=f"url_{i + 1}")
             if url:
                 urls.append(url)
         
-        # Add more URL boxes
+        
         if st.button("Add"):
             if st.session_state.url_boxes < 3:
                 st.session_state.url_boxes += 1
         
-        # Submit URLs for scraping
+        
         if st.button("Submit"):
             full_text = ""
             for url in urls:
@@ -188,7 +184,7 @@ def main():
         
         st.markdown("</div>", unsafe_allow_html=True)  # End of the URL container
 
-    # Chat Area (Right)
+    
     with right_col:
         st.markdown("<h1 style='text-align: center; color: #00B4D8;'>Website Assistant Chatbot 🌐</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #6D6875;'>Ask any question about the scraped content from provided URLs.</p>", unsafe_allow_html=True)
@@ -197,7 +193,7 @@ def main():
         if user_question:
             user_input(user_question)
 
-        # Display chat history (upward scrolling)
+        
         if st.session_state.chat_history:
             st.write("## Chat History")
             with st.container():
@@ -210,7 +206,7 @@ def main():
                         </div>
                         """, unsafe_allow_html=True)
 
-    # Add a colorful background to the main container
+    
     with st.container():
         st.markdown("<div class='main-container'></div>", unsafe_allow_html=True)
 
